@@ -1,0 +1,33 @@
+name: Echo recursive
+description: Echos a value.
+inputs:
+  in-value:
+    description: Value to echo.
+    required: true
+outputs:
+  out-value:
+    description: Echoed value.
+    value: ${{ steps.out-step.outputs.out-step-output }}
+runs:
+  using: "composite"
+  steps:
+
+    - id: validate-input
+      if: ${{ inputs.in-value == '' }}
+      run: |
+        echo "in-value is required."
+        exit 1
+
+    - id: call-echo
+      uses: squee1945/gha-echo-base@main
+      with:
+        in-value: ${{ inputs.in-value }}
+
+    - id: fail-if-not-set
+      if: ${{ steps.call-echo.outputs.out-value == '' }}
+      uses: squee1945/gha-fail@main
+
+    - id: out-step
+      name: Output value
+      run: |
+        echo "out-step-output=${{ steps.call-echo.outputs.out-value }}" >> $GITHUB_OUTPUT
